@@ -12,6 +12,7 @@ class SysinfoSource(IntervalSource):
     def __init(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.current_timestamp = None
+        self.prev_timestamp = None
         self.prev_net_io = None
 
     @rpc_handler("config")
@@ -47,6 +48,7 @@ class SysinfoSource(IntervalSource):
 
         # Network
         self.prev_net_io = psutil.net_io_counters(pernic=True, nowrap=True)
+        self.prev_timestamp = Timestamp.now()
         for nic_name in self.prev_net_io.keys():
             for sr in "sent", "recv":
                 meta[f"net.{nic_name}.{sr}.bytes"] = {
@@ -78,6 +80,7 @@ class SysinfoSource(IntervalSource):
             send_metrics.append(self.send(f"mem.{mem_name}", now, mem_value))
 
         net_io = psutil.net_io_counters(pernic=True, nowrap=True)
+        duration_s = (now - self.prev_timestamp).s
         for nic_name, net_values in net_io.items():
             prev_net_values = self.prev_net_io[nic_name]
             send_metrics.extend(
@@ -85,25 +88,30 @@ class SysinfoSource(IntervalSource):
                     self.send(
                         f"net.{nic_name}.sent.bytes",
                         now,
-                        (net_values.bytes_sent - prev_net_values.bytes_sent),
+                        (net_values.bytes_sent - prev_net_values.bytes_sent)
+                        / duration_s,
                     ),
                     self.send(
                         f"net.{nic_name}.sent.packets",
                         now,
-                        (net_values.packets_sent - prev_net_values.packets_sent),
+                        (net_values.packets_sent - prev_net_values.packets_sent)
+                        / duration_s,
                     ),
                     self.send(
                         f"net.{nic_name}.recv.bytes",
                         now,
-                        (net_values.bytes_recv - prev_net_values.bytes_recv),
+                        (net_values.bytes_recv - prev_net_values.bytes_recv)
+                        / duration_s,
                     ),
                     self.send(
                         f"net.{nic_name}.recv.packets",
                         now,
-                        (net_values.packets_recv - prev_net_values.packets_recv),
+                        (net_values.packets_recv - prev_net_values.packets_recv)
+                        / duration_s,
                     ),
                 ]
             )
         self.prev_net_io = net_io
+        self.prev_timestamp = now
 
         await asyncio.gather(*send_metrics)
