@@ -33,7 +33,7 @@ class SysinfoSource(IntervalSource):
         psutil.cpu_percent(percpu=True)
         meta["cpu.usage"] = {
             "rate": rate,
-            "description": "CPU usage (100% = 1 logical core busy)",
+            "description": "CPU usage (100% = 1 logical CPU busy)",
             "unit": "%",
         }
 
