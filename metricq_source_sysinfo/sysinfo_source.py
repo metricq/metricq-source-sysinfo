@@ -85,22 +85,22 @@ class SysinfoSource(IntervalSource):
                     self.send(
                         f"net.{nic_name}.sent.bytes",
                         now,
-                        (prev_net_values.bytes_sent - net_values.bytes_sent),
+                        (net_values.bytes_sent - prev_net_values.bytes_sent),
                     ),
                     self.send(
                         f"net.{nic_name}.sent.packets",
                         now,
-                        (prev_net_values.packets_sent - net_values.packets_sent),
+                        (net_values.packets_sent - prev_net_values.packets_sent),
                     ),
                     self.send(
                         f"net.{nic_name}.recv.bytes",
                         now,
-                        (prev_net_values.bytes_recv - net_values.bytes_recv),
+                        (net_values.bytes_recv - prev_net_values.bytes_recv),
                     ),
                     self.send(
                         f"net.{nic_name}.recv.packets",
                         now,
-                        (prev_net_values.packets_recv - net_values.packets_recv),
+                        (net_values.packets_recv - prev_net_values.packets_recv),
                     ),
                 ]
             )
