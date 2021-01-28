@@ -14,6 +14,7 @@ class SysinfoSource(IntervalSource):
         self.current_timestamp = None
         self.prev_timestamp = None
         self.prev_net_io = None
+        self.prev_disk_io = None
 
     @rpc_handler("config")
     async def _on_config(self, **config):
@@ -60,6 +61,21 @@ class SysinfoSource(IntervalSource):
                     "rate": rate,
                     "description": f"Number of packets {sr} on nic {nic_name}",
                     "unit": "Hz",
+                }
+
+        # Disk
+        self.prev_disk_io = psutil.disk_io_counters(perdisk=True, nowrap=True)
+        for disk_name in self.prev_disk_io.keys():                
+            for rw in "read", "written":
+                meta[f"disk.{disk_name}.{rw}.count"] = {
+                    "rate": rate,
+                    "description": f"Number of {rw}s on partition {disk_name}",
+                    "unit": "Hz",
+                }
+                meta[f"disk.{disk_name}.{rw}.bytes"] = {
+                    "rate": rate,
+                    "description": f"Total data {rw} on partition {disk_name}",
+                    "unit": "B/s",
                 }
 
         await self.declare_metrics(
@@ -111,6 +127,41 @@ class SysinfoSource(IntervalSource):
                     ),
                 ]
             )
+
+        disk_io = psutil.disk_io_counters(perdisk=True, nowrap=True)
+        duration_s = (now - self.prev_timestamp).s
+        for disk_name, disk_values in disk_io.items():
+            prev_disk_values = self.prev_disk_io[disk_name]
+            send_metrics.extend(
+                [
+                    self.send(
+                        f"disk.{disk_name}.written.bytes",
+                        now,
+                        (disk_values.write_bytes - prev_disk_values.write_bytes)
+                        / duration_s,
+                    ),
+                    self.send(
+                        f"disk.{disk_name}.written.count",
+                        now,
+                        (disk_values.write_count - prev_disk_values.write_count)
+                        / duration_s,
+                    ),
+                    self.send(
+                        f"disk.{disk_name}.read.bytes",
+                        now,
+                        (disk_values.read_bytes - prev_disk_values.read_bytes)
+                        / duration_s,
+                    ),
+                    self.send(
+                        f"disk.{disk_name}.read.count",
+                        now,
+                        (disk_values.read_count - prev_disk_values.read_count)
+                        / duration_s,
+                    ),
+                ]
+            )
+
+        self.prev_disk_io = disk_io
         self.prev_net_io = net_io
         self.prev_timestamp = now
 
