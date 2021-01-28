@@ -65,14 +65,13 @@ class SysinfoSource(IntervalSource):
 
         # Disk
         self.prev_disk_io = psutil.disk_io_counters(perdisk=True, nowrap=True)
-        for disk_name in self.prev_disk_io.keys():
-            for rw in "read", "write":
+        for disk_name in self.prev_disk_io.keys():                
+            for rw in "read", "written":
                 meta[f"disk.{disk_name}.{rw}.count"] = {
                     "rate": rate,
                     "description": f"Number of {rw}s on partition {disk_name}",
                     "unit": "Hz",
                 }
-            for rw in "read", "written":
                 meta[f"disk.{disk_name}.{rw}.bytes"] = {
                     "rate": rate,
                     "description": f"Total data {rw} on partition {disk_name}",
@@ -142,7 +141,7 @@ class SysinfoSource(IntervalSource):
                         / duration_s,
                     ),
                     self.send(
-                        f"disk.{disk_name}.write.count",
+                        f"disk.{disk_name}.written.count",
                         now,
                         (disk_values.write_count - prev_disk_values.write_count)
                         / duration_s,
