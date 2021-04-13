@@ -11,5 +11,11 @@ setup(
       [console_scripts]
       metricq-source-sysinfo=metricq_source_sysinfo:run
       """,
-    install_requires=["click", "click-completion", "click_log", "metricq", "psutil"],
+    install_requires=[
+        "click",
+        "click-completion",
+        "click_log",
+        "metricq ~= 2.0",
+        "psutil",
+    ],
 )

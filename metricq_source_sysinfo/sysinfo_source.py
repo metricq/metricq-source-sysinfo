@@ -3,7 +3,7 @@ import socket
 
 import psutil
 
-from metricq import IntervalSource, Timestamp, logging, rpc_handler
+from metricq import IntervalSource, Timedelta, Timestamp, logging, rpc_handler
 
 logger = logging.get_logger("SysinfoSource")
 
@@ -20,7 +20,7 @@ class SysinfoSource(IntervalSource):
     async def _on_config(self, **config):
         logger.info("config: {}", config)
         rate = config["rate"]
-        self.period = 1 / rate
+        self.period = Timedelta.from_s(1 / rate)
         try:
             self.prefix = config["prefix"]
             if self.prefix != "" and not self.prefix.endswith("."):
