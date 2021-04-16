@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]~=6.0"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
 line-length = 88
 target_version = ['py37']
@@ -30,3 +34,6 @@ include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
+
+[tool.setuptools_scm]
+write_to = "metricq_source_sysinfo/version.py"

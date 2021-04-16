@@ -2,15 +2,16 @@ import asyncio
 import socket
 
 import psutil
-
 from metricq import IntervalSource, Timedelta, Timestamp, logging, rpc_handler
+
+from .version import version as client_version
 
 logger = logging.get_logger("SysinfoSource")
 
 
 class SysinfoSource(IntervalSource):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, client_version=client_version, **kwargs)
         self.prev_timestamp = None
         self.prev_net_io = None
         self.prev_disk_io = None

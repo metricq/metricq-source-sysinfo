@@ -18,4 +18,5 @@ setup(
         "metricq ~= 2.0",
         "psutil",
     ],
+    use_scm_version=True,
 )
