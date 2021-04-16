@@ -85,6 +85,8 @@ class SysinfoSource(IntervalSource):
         await super().send(self.prefix + metric, timestamp, value)
 
     async def update(self):
+        assert self.prev_timestamp is not None, "update() called before _on_config()"
+
         now = Timestamp.now()
         send_metrics = list()
         send_metrics.append(
