@@ -11,7 +11,6 @@ logger = logging.get_logger("SysinfoSource")
 class SysinfoSource(IntervalSource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.current_timestamp = None
         self.prev_timestamp = None
         self.prev_net_io = None
         self.prev_disk_io = None
