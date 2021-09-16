@@ -15,7 +15,7 @@ setup(
         "click",
         "click-completion",
         "click_log",
-        "metricq ~= 2.0",
+        "metricq ~= 3.0",
         "psutil",
     ],
     use_scm_version=True,
