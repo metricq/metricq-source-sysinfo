@@ -47,6 +47,13 @@ class SysinfoSource(IntervalSource):
                 "unit": "%" if mem_name == "percent" else "B",
             }
 
+        for swap_name in psutil.swap_memory()._fields:
+            meta[f"swap.{swap_name}"] = {
+                "rate": rate,
+                "description": "See https://psutil.readthedocs.io/en/latest/#psutil.swap_memory",
+                "unit": "%" if swap_name == "percent" else "B",
+            }
+
         # Network
         self.prev_net_io = psutil.net_io_counters(pernic=True, nowrap=True)
         self.prev_timestamp = Timestamp.now()
@@ -96,6 +103,9 @@ class SysinfoSource(IntervalSource):
 
         for mem_name, mem_value in psutil.virtual_memory()._asdict().items():
             send_metrics.append(self.send(f"mem.{mem_name}", now, mem_value))
+
+        for swap_name, swap_value in psutil.swap_memory()._asdict().items():
+            send_metrics.append(self.send(f"swap.{swap_name}", now, swap_value))
 
         net_io = psutil.net_io_counters(pernic=True, nowrap=True)
         duration_s = (now - self.prev_timestamp).s
