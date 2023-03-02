@@ -2,9 +2,9 @@ from setuptools import setup
 
 setup(
     name="metricq_source_sysinfo",
-    version="0.1",
+    version="0.2",
     author="TU Dresden",
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     packages=["metricq_source_sysinfo"],
     scripts=[],
     entry_points="""
@@ -15,7 +15,7 @@ setup(
         "click",
         "click-completion",
         "click_log",
-        "metricq ~= 3.0",
+        "metricq ~= 4.2",
         "psutil",
     ],
     use_scm_version=True,
