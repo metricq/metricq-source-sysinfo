@@ -1,4 +1,4 @@
-FROM metricq/metricq-python:v4.2 AS BUILDER
+FROM ghcr.io/metricq/metricq-python:v4.2 AS BUILDER
 
 USER root
 RUN apt-get update \
@@ -15,7 +15,7 @@ WORKDIR /home/metricq/metricq_source_sysinfo
 RUN pip install --user .
 
 
-FROM metricq/metricq-python:v4.2
+FROM ghcr.io/metricq/metricq-python:v4.2
 
 COPY --from=BUILDER --chown=metricq:metricq /home/metricq/.local /home/metricq/.local
 
