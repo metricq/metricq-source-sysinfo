@@ -1,5 +1,6 @@
 import asyncio
 import socket
+import re
 
 import psutil
 from metricq import IntervalSource, Timedelta, Timestamp, logging, rpc_handler
@@ -8,6 +9,8 @@ from .version import version as client_version
 
 logger = logging.get_logger("SysinfoSource")
 
+# Ignore internal nics, especially from docker
+_NIC_IGNORE_PATTERN = re.compile(r"^(lo|br|docker|veth)")
 
 class SysinfoSource(IntervalSource):
     def __init__(self, *args, **kwargs):
@@ -58,6 +61,8 @@ class SysinfoSource(IntervalSource):
         self.prev_net_io = psutil.net_io_counters(pernic=True, nowrap=True)
         self.prev_timestamp = Timestamp.now()
         for nic_name in self.prev_net_io.keys():
+            if _NIC_IGNORE_PATTERN.match(nic_name):
+                continue
             for sr in "sent", "recv":
                 meta[f"net.{nic_name}.{sr}.bytes"] = {
                     "rate": rate,
