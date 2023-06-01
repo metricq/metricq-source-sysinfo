@@ -115,6 +115,8 @@ class SysinfoSource(IntervalSource):
         net_io = psutil.net_io_counters(pernic=True, nowrap=True)
         duration_s = (now - self.prev_timestamp).s
         for nic_name, net_values in net_io.items():
+            if _NIC_IGNORE_PATTERN.match(nic_name):
+                continue
             prev_net_values = self.prev_net_io[nic_name]
             send_metrics.extend(
                 [
