@@ -1,8 +1,7 @@
 import logging
 
 import click
-
-import click_log
+import click_log  # type: ignore
 from metricq.logging import get_logger
 
 from .sysinfo_source import SysinfoSource
@@ -19,7 +18,7 @@ logger.handlers[0].formatter = logging.Formatter(
 @click.command()
 @click.argument("management-url", default="amqp://localhost/")
 @click.option("--token", default="source-sysinfo")
-@click_log.simple_verbosity_option(logger)
-def run(management_url, token):
+@click_log.simple_verbosity_option(logger)  # type: ignore
+def run(management_url: str, token: str) -> None:
     src = SysinfoSource(management_url=management_url, token=token)
     src.run()

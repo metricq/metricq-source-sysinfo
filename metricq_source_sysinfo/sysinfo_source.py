@@ -1,7 +1,9 @@
 import asyncio
-import socket
 import re
+import socket
+from typing import TYPE_CHECKING, Any, Optional
 
+import metricq
 import psutil
 from metricq import IntervalSource, Timedelta, Timestamp, logging, rpc_handler
 
@@ -12,15 +14,21 @@ logger = logging.get_logger("SysinfoSource")
 # Ignore internal nics, especially from docker
 _NIC_IGNORE_PATTERN = re.compile(r"^(lo|br|docker|veth)")
 
+if TYPE_CHECKING:
+    # Unfortunately there's no public type for it
+    from psutil._common import sdiskio, snetio
+
+
 class SysinfoSource(IntervalSource):
-    def __init__(self, *args, **kwargs):
+    prev_timestamp: Optional[metricq.Timestamp] = None
+    prev_net_io: Optional[dict[str, snetio]] = None
+    prev_disk_io: Optional[dict[str, sdiskio]] = None
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, client_version=client_version, **kwargs)
-        self.prev_timestamp = None
-        self.prev_net_io = None
-        self.prev_disk_io = None
 
     @rpc_handler("config")
-    async def _on_config(self, **config):
+    async def _on_config(self, **config: Any) -> None:
         logger.info("config: {}", config)
         rate = config["rate"]
         self.period = Timedelta.from_s(1 / rate)
@@ -77,7 +85,7 @@ class SysinfoSource(IntervalSource):
 
         # Disk
         self.prev_disk_io = psutil.disk_io_counters(perdisk=True, nowrap=True)
-        for disk_name in self.prev_disk_io.keys():                
+        for disk_name in self.prev_disk_io.keys():
             for rw in "read", "written":
                 meta[f"disk.{disk_name}.{rw}.count"] = {
                     "rate": rate,
@@ -94,10 +102,12 @@ class SysinfoSource(IntervalSource):
             {self.prefix + key: value for key, value in meta.items()}
         )
 
-    async def send(self, metric, timestamp, value):
+    async def send(
+        self, metric: str, timestamp: metricq.Timestamp, value: float
+    ) -> None:
         await super().send(self.prefix + metric, timestamp, value)
 
-    async def update(self):
+    async def update(self) -> None:
         assert self.prev_timestamp is not None, "update() called before _on_config()"
 
         now = Timestamp.now()
@@ -114,6 +124,7 @@ class SysinfoSource(IntervalSource):
 
         net_io = psutil.net_io_counters(pernic=True, nowrap=True)
         duration_s = (now - self.prev_timestamp).s
+        assert self.prev_net_io is not None
         for nic_name, net_values in net_io.items():
             if _NIC_IGNORE_PATTERN.match(nic_name):
                 continue
@@ -148,6 +159,7 @@ class SysinfoSource(IntervalSource):
             )
 
         disk_io = psutil.disk_io_counters(perdisk=True, nowrap=True)
+        assert self.prev_disk_io is not None
         duration_s = (now - self.prev_timestamp).s
         for disk_name, disk_values in disk_io.items():
             prev_disk_values = self.prev_disk_io[disk_name]
