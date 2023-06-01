@@ -14,7 +14,7 @@ setup(
     install_requires=[
         "click",
         "click_log",
-        "metricq ~= 4.2",
+        "metricq ~= 5.0",
         "psutil",
     ],
     use_scm_version=True,
