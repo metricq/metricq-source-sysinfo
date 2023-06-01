@@ -16,8 +16,6 @@ logger.handlers[0].formatter = logging.Formatter(
     fmt="%(asctime)s [%(levelname)-8s] [%(name)-20s] %(message)s"
 )
 
-click_completion.init()
-
 
 @click.command()
 @click.argument("management-url", default="amqp://localhost/")
