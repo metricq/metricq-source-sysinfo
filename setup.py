@@ -13,7 +13,6 @@ setup(
       """,
     install_requires=[
         "click",
-        "click-completion",
         "click_log",
         "metricq ~= 4.2",
         "psutil",
