@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="metricq_source_sysinfo",
-    version="0.2",
+    version="1.0",
     author="TU Dresden",
     python_requires=">=3.10",
     packages=["metricq_source_sysinfo"],
