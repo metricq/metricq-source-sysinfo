@@ -2,7 +2,6 @@ import logging
 
 import click
 
-import click_completion
 import click_log
 from metricq.logging import get_logger
 
