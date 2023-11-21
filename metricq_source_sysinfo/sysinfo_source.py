@@ -21,8 +21,8 @@ if TYPE_CHECKING:
 
 class SysinfoSource(IntervalSource):
     prev_timestamp: Optional[metricq.Timestamp] = None
-    prev_net_io: Optional[dict[str, snetio]] = None
-    prev_disk_io: Optional[dict[str, sdiskio]] = None
+    prev_net_io: Optional[dict[str, "snetio"]] = None
+    prev_disk_io: Optional[dict[str, "sdiskio"]] = None
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, client_version=client_version, **kwargs)
