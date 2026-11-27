@@ -1,22 +1,28 @@
-FROM ghcr.io/metricq/metricq-python:v4.2 AS BUILDER
+FROM python:3.13-slim-trixie AS builder
 
-USER root
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     git \
     build-essential \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/*
 
-COPY --chown=metricq:metricq . /home/metricq/metricq_source_sysinfo
+RUN python -m venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
+
+COPY . /src
+WORKDIR /src
+
+RUN pip install --no-cache-dir '.'
+
+
+FROM python:3.13-slim-trixie
+
+RUN useradd -m metricq
+
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH
 
 USER metricq
-WORKDIR /home/metricq/metricq_source_sysinfo
+WORKDIR /home/metricq
 
-RUN pip install --user .
-
-
-FROM ghcr.io/metricq/metricq-python:v4.2
-
-COPY --from=BUILDER --chown=metricq:metricq /home/metricq/.local /home/metricq/.local
-
-ENTRYPOINT [ "/home/metricq/.local/bin/metricq-source-sysinfo" ]
+ENTRYPOINT [ "metricq-source-sysinfo" ]
